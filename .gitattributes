@@ -1,1 +1,2 @@
 passwords_targetted_en.txt filter=lfs diff=lfs merge=lfs -text
+passwords_targetted_ar.txt filter=lfs diff=lfs merge=lfs -text
