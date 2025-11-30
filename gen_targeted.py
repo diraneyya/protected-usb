@@ -77,15 +77,35 @@ ALL_YEARS = YEARS + SHORT_YEARS + HIJRI_YEARS + SHORT_HIJRI
 # Common separators
 SEPARATORS = ['', ' ', '_', '-', '.', '@', '#']
 
+# Abu prefixes (only for names, not cities)
+ABU_PREFIXES_EN = ['abu', 'Abu', 'ABU', 'abo', 'Abo', 'ABO']
+ABU_SEPARATORS = ['', ' ', '_']
+
+def generate_abu_variants(names_dict):
+    """Generate Abu + name variants for names only"""
+    abu_names = []
+    for variants in names_dict.values():
+        for name in variants:
+            # Skip if name already starts with abu/abo
+            if name.lower().startswith('abu') or name.lower().startswith('abo'):
+                continue
+            for abu in ABU_PREFIXES_EN:
+                for sep in ABU_SEPARATORS:
+                    abu_names.append(f"{abu}{sep}{name}")
+    return abu_names
+
 # Will be populated based on command line args
 ALL_NAMES = []
 
-def get_all_names(include_names=True, include_cities=False):
+def get_all_names(include_names=True, include_cities=False, include_abu=True):
     """Build the list of names based on options"""
     names = []
     if include_names:
         for variants in FAMILY_NAMES.values():
             names.extend(variants)
+        # Add Abu + name variants (only for family names, not cities)
+        if include_abu:
+            names.extend(generate_abu_variants(FAMILY_NAMES))
     if include_cities:
         for variants in JORDAN_CITIES.values():
             names.extend(variants)

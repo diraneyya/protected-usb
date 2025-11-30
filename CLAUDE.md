@@ -18,6 +18,10 @@ This directory contains tools and documentation for recovering a BitLocker-encry
 | `arabic_attack.hcmask` | Hashcat mask file for Arabic password attacks |
 | `hashes.txt` | All extracted BitLocker hashes |
 | `user_password_hash.txt` | User password hash for cracking |
+| `gen_targeted.py` | Targeted English password generator |
+| `gen_targeted_arabic.py` | Targeted Arabic password generator |
+| `hash.txt` | BitLocker hash file for hashcat |
+| `wordlist_sufian.txt` | Custom Arabic wordlist |
 
 ## Hash Information
 

@@ -79,16 +79,31 @@ SEPARATORS = ['', ' ', '_', '-', '.', '@', '#']
 # Arabic digits (Eastern Arabic numerals) - optional
 ARABIC_DIGITS = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
 
+# Abu prefixes (only for names, not cities)
+ABU_PREFIXES_AR = ['ابو', 'أبو', 'ابو ', 'أبو ']
+
+def generate_abu_variants(names_dict):
+    """Generate Abu + name variants for Arabic names only"""
+    abu_names = []
+    for variants in names_dict.values():
+        for name in variants:
+            for abu in ABU_PREFIXES_AR:
+                abu_names.append(f"{abu}{name}")
+    return abu_names
+
 def char_len(s):
     """Count characters (not bytes) for length validation"""
     return len(s)
 
-def get_all_names(include_names=True, include_cities=False):
+def get_all_names(include_names=True, include_cities=False, include_abu=True):
     """Build the list of names based on options"""
     names = []
     if include_names:
         for variants in FAMILY_NAMES.values():
             names.extend(variants)
+        # Add Abu + name variants (only for family names, not cities)
+        if include_abu:
+            names.extend(generate_abu_variants(FAMILY_NAMES))
     if include_cities:
         for variants in JORDAN_CITIES.values():
             names.extend(variants)
