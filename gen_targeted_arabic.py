@@ -295,8 +295,7 @@ def generate_love_patterns(names):
                     yield pwd
 
 def generate_phone_patterns(names):
-    """Phone number patterns - Jordan/Syria mobile prefixes + 7 digits is too large,
-    so we use common patterns and shorter sequences"""
+    """Phone number patterns - Jordan/Syria mobile prefixes"""
     # Common Jordan mobile prefixes (07X)
     jordan_prefixes = ['077', '078', '079']
     # Syria prefixes (09X)
@@ -320,6 +319,21 @@ def generate_phone_patterns(names):
         for prefix in all_prefixes:
             for d in range(10000):
                 pwd = f"{name} {prefix}{d:04d}"
+                if 8 <= char_len(pwd) <= 20:
+                    yield pwd
+
+def generate_digits_4(names):
+    """Name + any 4 digits (0000-9999) - covers PO boxes, pins, short codes"""
+    separators = ['', ' ', '_', '-', '.']
+
+    for name in names:
+        for sep in separators:
+            for d in range(10000):  # 0000-9999
+                pwd = f"{name}{sep}{d:04d}"
+                if 8 <= char_len(pwd) <= 20:
+                    yield pwd
+                # Also digits first
+                pwd = f"{d:04d}{sep}{name}"
                 if 8 <= char_len(pwd) <= 20:
                     yield pwd
 
@@ -348,6 +362,7 @@ def main():
     parser.add_argument('--no-names', action='store_true', help='Exclude family names')
     parser.add_argument('--only-cities', action='store_true', help='Use only city names (same as --cities --no-names)')
     parser.add_argument('--phone', action='store_true', help='Include phone number patterns (large keyspace)')
+    parser.add_argument('--digits4', action='store_true', help='Include any 4-digit patterns (PO boxes, pins)')
     parser.add_argument('--extended', action='store_true', help='Include extended digit patterns 5-7 digits (very large)')
     args = parser.parse_args()
 
@@ -387,6 +402,11 @@ def main():
     if args.phone:
         generators.append(("phone_patterns", generate_phone_patterns))
         print("# Including phone number patterns", file=sys.stderr)
+
+    # Add 4-digit patterns if requested (PO boxes, pins, etc.)
+    if args.digits4:
+        generators.append(("digits_4", generate_digits_4))
+        print("# Including 4-digit patterns (0000-9999)", file=sys.stderr)
 
     # Add extended digits if requested (very large keyspace)
     if args.extended:
