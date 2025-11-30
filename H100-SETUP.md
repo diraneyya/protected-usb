@@ -24,7 +24,7 @@ ssh user@your-h100-instance
 
 ```bash
 # Update and install hashcat + NVIDIA drivers
-sudo apt update && sudo apt install -y hashcat nvidia-driver-535 nvidia-cuda-toolkit
+sudo apt update && sudo apt install -y hashcat nvidia-cuda-toolkit cuda-toolkit-12-4
 
 # Verify GPU is detected
 nvidia-smi
@@ -34,7 +34,7 @@ hashcat -I
 ### 3. Create the hash file
 
 ```bash
-mkdir -p ~/bitlocker && cat > ~/bitlocker/hash.txt << 'EOF'
+cat > hash.txt << 'EOF'
 $bitlocker$0$16$b3b78555e45367d2d735588ffe89ce85$1048576$12$90e2969ca76cd50103000000$60$692c659b722d52df34acaf73c8f52f15e34a1d6267f8840e3fc93f1c488ab800ed1e0128f701eced9dd1116ace6c42144ed70825b6cf7f01202424f3
 EOF
 ```
@@ -335,6 +335,56 @@ hashcat -m 22100 -D 2 hash.txt wordlist.txt
 ```bash
 # Reduce workload
 hashcat -m 22100 -w 2 hash.txt wordlist.txt
+```
+
+### NVRTC_ERROR_INVALID_OPTION / Kernel build failed
+
+**This is the most common issue with newer GPUs (RTX 4090, H100) and CUDA 12.9+**
+
+Error looks like:
+```
+nvrtcCompileProgram(): NVRTC_ERROR_INVALID_OPTION
+* Device #1: Kernel /usr/share/hashcat/OpenCL/shared.cl build failed.
+nvrtc: error: invalid value for --gpu-architecture (-arch)
+```
+
+**Root Cause:** Hashcat 6.2.5 (apt default) is incompatible with CUDA 12.9. Need hashcat 6.2.6+ and CUDA toolkit 12.4.
+
+**Solution:**
+
+```bash
+# 1. Install CUDA toolkit 12.4 (not just drivers)
+sudo apt install -y cuda-toolkit-12-4
+
+# 2. Download latest hashcat binary (not from apt)
+cd /opt
+wget https://hashcat.net/files/hashcat-6.2.6.7z
+7z x hashcat-6.2.6.7z
+ln -sf /opt/hashcat-6.2.6/hashcat.bin /usr/local/bin/hashcat
+
+# 3. Verify
+hashcat --version  # Should show v6.2.6
+hashcat -I         # Should list all GPUs under CUDA API
+```
+
+**Key Points:**
+- The NVIDIA driver reports CUDA 12.9, but hashcat needs the CUDA *toolkit* 12.4 for compilation
+- Apt's hashcat (6.2.5) doesn't support RTX 40-series Ada Lovelace architecture properly
+- Always download hashcat binaries from hashcat.net for latest GPU support
+
+### Hashcat not using all GPUs
+
+If only 1 GPU shows activity and others show 0% utilization:
+- This happens when the keyspace is too small for parallel work
+- Give hashcat more work (larger wordlist, longer mask)
+- Check with: `hashcat -m 22100 hash.txt -a 3 '?l?l?l?l?l?l?l?l' -w 3` (8-char lowercase)
+
+### Session already exists
+```bash
+# Remove old session
+rm ~/.local/share/hashcat/sessions/sessionname.*
+# Or use different session name
+hashcat ... --session=newname
 ```
 
 ---
