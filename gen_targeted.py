@@ -231,11 +231,61 @@ def generate_common_patterns(names):
             if 8 <= len(pwd_cap) <= 20:
                 yield pwd_cap
 
+def generate_phone_patterns(names):
+    """Phone number patterns - Jordan/Syria mobile prefixes"""
+    # Common Jordan mobile prefixes (07X)
+    jordan_prefixes = ['077', '078', '079']
+    # Syria prefixes (09X)
+    syria_prefixes = ['091', '092', '093', '094', '095', '099']
+
+    all_prefixes = jordan_prefixes + syria_prefixes
+
+    for name in names:
+        # Name + phone prefix + 4-5 digits (manageable keyspace)
+        for prefix in all_prefixes:
+            for d in range(10000):  # 0000-9999
+                pwd = f"{name}{prefix}{d:04d}"
+                if 8 <= len(pwd) <= 20:
+                    yield pwd
+            for d in range(100000):  # 00000-99999
+                pwd = f"{name}{prefix}{d:05d}"
+                if 8 <= len(pwd) <= 20:
+                    yield pwd
+
+        # Name + space/underscore + phone patterns
+        for sep in [' ', '_', '']:
+            for prefix in all_prefixes:
+                for d in range(10000):
+                    pwd = f"{name}{sep}{prefix}{d:04d}"
+                    if 8 <= len(pwd) <= 20:
+                        yield pwd
+
+def generate_extended_digits(names):
+    """Extended digit patterns: 5-7 digits after name"""
+    for name in names:
+        # 5 digits
+        for d in range(100000):
+            pwd = f"{name}{d:05d}"
+            if 8 <= len(pwd) <= 20:
+                yield pwd
+        # 6 digits
+        for d in range(1000000):
+            pwd = f"{name}{d:06d}"
+            if 8 <= len(pwd) <= 20:
+                yield pwd
+        # 7 digits (limited - only round numbers and sequences)
+        for d in range(0, 10000000, 1000):  # Every 1000th number
+            pwd = f"{name}{d:07d}"
+            if 8 <= len(pwd) <= 20:
+                yield pwd
+
 def main():
     parser = argparse.ArgumentParser(description='Generate targeted passwords')
     parser.add_argument('--cities', action='store_true', help='Include Jordan/Syria city names')
     parser.add_argument('--no-names', action='store_true', help='Exclude family names')
     parser.add_argument('--only-cities', action='store_true', help='Use only city names (same as --cities --no-names)')
+    parser.add_argument('--phone', action='store_true', help='Include phone number patterns (large keyspace)')
+    parser.add_argument('--extended', action='store_true', help='Include extended digit patterns 5-7 digits (very large)')
     args = parser.parse_args()
 
     # Handle --only-cities shortcut
@@ -266,6 +316,16 @@ def main():
         ("leet_speak", generate_leet_speak),
         ("common_patterns", generate_common_patterns),
     ]
+
+    # Add phone patterns if requested (large keyspace)
+    if args.phone:
+        generators.append(("phone_patterns", generate_phone_patterns))
+        print("# Including phone number patterns", file=sys.stderr)
+
+    # Add extended digits if requested (very large keyspace)
+    if args.extended:
+        generators.append(("extended_digits", generate_extended_digits))
+        print("# Including extended digit patterns (5-7 digits)", file=sys.stderr)
 
     for gen_name, gen_func in generators:
         for pwd in gen_func(names):
