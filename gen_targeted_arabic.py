@@ -24,9 +24,18 @@ for variants in NAMES.values():
 # Special characters
 SPECIALS = ['', '!', '@', '#', '$', '%', '&', '*', '_', '-', '.', '+', '=']
 
-# Years
+# Gregorian Years
 YEARS = [str(y) for y in range(1900, 2026)]
 SHORT_YEARS = [str(y)[2:] for y in range(1950, 2026)]  # 50-25
+
+# Hijri Years (Islamic calendar)
+# Current year ~1446 AH (2024 CE)
+# Range: 1300-1446 covers roughly 1882-2024 CE
+HIJRI_YEARS = [str(y) for y in range(1300, 1447)]
+SHORT_HIJRI = [str(y)[2:] for y in range(1400, 1447)]  # 00-46 (1400-1446)
+
+# Combined all years
+ALL_YEARS = YEARS + SHORT_YEARS + HIJRI_YEARS + SHORT_HIJRI
 
 # Common separators
 SEPARATORS = ['', ' ', '_', '-', '.', '@', '#']
@@ -39,17 +48,17 @@ def char_len(s):
     return len(s)
 
 def generate_name_year():
-    """Pattern: Name + special + year"""
+    """Pattern: Name + special + year (Gregorian + Hijri)"""
     for name in ALL_NAMES:
         for spec in SPECIALS:
-            for year in YEARS + SHORT_YEARS:
+            for year in ALL_YEARS:
                 pwd = f"{name}{spec}{year}"
                 if 8 <= char_len(pwd) <= 20:
                     yield pwd
 
 def generate_year_name():
-    """Pattern: Year + special + name"""
-    for year in YEARS + SHORT_YEARS:
+    """Pattern: Year + special + name (Gregorian + Hijri)"""
+    for year in ALL_YEARS:
         for spec in SPECIALS:
             for name in ALL_NAMES:
                 pwd = f"{year}{spec}{name}"
@@ -57,9 +66,9 @@ def generate_year_name():
                     yield pwd
 
 def generate_name_space_year():
-    """Pattern: Name + space + year (common Arabic pattern)"""
+    """Pattern: Name + space + year (common Arabic pattern, Gregorian + Hijri)"""
     for name in ALL_NAMES:
-        for year in YEARS + SHORT_YEARS:
+        for year in ALL_YEARS:
             pwd = f"{name} {year}"
             if 8 <= char_len(pwd) <= 20:
                 yield pwd
@@ -79,11 +88,11 @@ def generate_name_special_name():
                     yield pwd
 
 def generate_name_name_year():
-    """Pattern: Name + separator + name + year"""
+    """Pattern: Name + separator + name + year (Gregorian + Hijri)"""
     for name1 in ALL_NAMES:
         for sep in SEPARATORS:
             for name2 in ALL_NAMES:
-                for year in SHORT_YEARS + ['2020', '2021', '2022', '2023', '2024']:
+                for year in SHORT_YEARS + SHORT_HIJRI + ['2020', '2021', '2022', '2023', '2024', '1440', '1441', '1442', '1443', '1444', '1445', '1446']:
                     pwd = f"{name1}{sep}{name2}{year}"
                     if 8 <= char_len(pwd) <= 20:
                         yield pwd
@@ -215,8 +224,8 @@ def generate_love_patterns():
             pwd = f"{name} {love}"
             if 8 <= char_len(pwd) <= 20:
                 yield pwd
-            # with year
-            for year in ['2020', '2021', '2022', '2023', '2024']:
+            # with year (Gregorian + Hijri)
+            for year in ['2020', '2021', '2022', '2023', '2024', '1440', '1441', '1442', '1443', '1444', '1445', '1446']:
                 pwd = f"{love}{name}{year}"
                 if 8 <= char_len(pwd) <= 20:
                     yield pwd

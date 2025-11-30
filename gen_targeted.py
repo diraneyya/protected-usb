@@ -24,25 +24,34 @@ for variants in NAMES.values():
 # Special characters
 SPECIALS = ['', '!', '@', '#', '$', '%', '&', '*', '_', '-', '.', '+', '=']
 
-# Years
+# Gregorian Years
 YEARS = [str(y) for y in range(1900, 2026)]
 SHORT_YEARS = [str(y)[2:] for y in range(1950, 2026)]  # 50-25
+
+# Hijri Years (Islamic calendar)
+# Current year ~1446 AH (2024 CE)
+# Range: 1300-1446 covers roughly 1882-2024 CE
+HIJRI_YEARS = [str(y) for y in range(1300, 1447)]
+SHORT_HIJRI = [str(y)[2:] for y in range(1400, 1447)]  # 00-46 (1400-1446)
+
+# Combined all years
+ALL_YEARS = YEARS + SHORT_YEARS + HIJRI_YEARS + SHORT_HIJRI
 
 # Common separators
 SEPARATORS = ['', ' ', '_', '-', '.', '@', '#']
 
 def generate_name_year():
-    """Pattern: Name + special + year"""
+    """Pattern: Name + special + year (Gregorian + Hijri)"""
     for name in ALL_NAMES:
         for spec in SPECIALS:
-            for year in YEARS + SHORT_YEARS:
+            for year in ALL_YEARS:
                 pwd = f"{name}{spec}{year}"
                 if 8 <= len(pwd) <= 20:
                     yield pwd
 
 def generate_year_name():
-    """Pattern: Year + special + name"""
-    for year in YEARS + SHORT_YEARS:
+    """Pattern: Year + special + name (Gregorian + Hijri)"""
+    for year in ALL_YEARS:
         for spec in SPECIALS:
             for name in ALL_NAMES:
                 pwd = f"{year}{spec}{name}"
@@ -59,11 +68,11 @@ def generate_name_special_name():
                     yield pwd
 
 def generate_name_name_year():
-    """Pattern: Name + separator + name + year"""
+    """Pattern: Name + separator + name + year (Gregorian + Hijri)"""
     for name1 in ALL_NAMES:
         for sep in SEPARATORS:
             for name2 in ALL_NAMES:
-                for year in SHORT_YEARS:
+                for year in SHORT_YEARS + SHORT_HIJRI:
                     pwd = f"{name1}{sep}{name2}{year}"
                     if 8 <= len(pwd) <= 20:
                         yield pwd
@@ -97,7 +106,7 @@ def generate_name_special_digits():
                     yield pwd
 
 def generate_leet_speak():
-    """Leet speak variants of names"""
+    """Leet speak variants of names (with Gregorian + Hijri years)"""
     leet_map = {'a': '@', 'e': '3', 'i': '1', 'o': '0', 's': '$', 't': '7'}
 
     for name in ALL_NAMES:
@@ -113,8 +122,8 @@ def generate_leet_speak():
                     leet_name[pos] = leet_map[char]
                 leet_str = ''.join(leet_name)
 
-                # Add with years
-                for year in YEARS + SHORT_YEARS:
+                # Add with years (Gregorian + Hijri)
+                for year in ALL_YEARS:
                     pwd = f"{leet_str}{year}"
                     if 8 <= len(pwd) <= 20:
                         yield pwd
@@ -124,7 +133,7 @@ def generate_leet_speak():
                             yield pwd
 
 def generate_common_patterns():
-    """Common password patterns with names"""
+    """Common password patterns with names (Gregorian + Hijri years)"""
     patterns = [
         "{name}123", "{name}1234", "{name}12345",
         "{name}!", "{name}!!", "{name}@", "{name}@@",
@@ -133,7 +142,10 @@ def generate_common_patterns():
         "{name}abc", "{name}xyz",
         "i{name}", "my{name}", "the{name}",
         "{name}love", "love{name}",
+        # Gregorian years
         "{name}2020", "{name}2021", "{name}2022", "{name}2023", "{name}2024",
+        # Hijri years
+        "{name}1440", "{name}1441", "{name}1442", "{name}1443", "{name}1444", "{name}1445", "{name}1446",
     ]
 
     for name in ALL_NAMES:
