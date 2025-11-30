@@ -59,6 +59,31 @@ SYRIA_CITIES = {
     'suwayda': ['السويداء', 'سويداء'],
 }
 
+# Saudi Arabia cities (Arabic)
+SAUDI_CITIES = {
+    'riyadh': ['الرياض', 'رياض'],
+    'jeddah': ['جدة', 'جده'],
+    'mecca': ['مكة', 'مكه', 'مكة المكرمة'],
+    'medina': ['المدينة', 'مدينة', 'المدينة المنورة'],
+    'dammam': ['الدمام', 'دمام'],
+    'khobar': ['الخبر', 'خبر'],
+    'dhahran': ['الظهران', 'ظهران'],
+    'tabuk': ['تبوك'],
+    'taif': ['الطائف', 'طائف'],
+    'abha': ['أبها', 'ابها'],
+    'khamis': ['خميس مشيط', 'خميس'],
+    'jubail': ['الجبيل', 'جبيل'],
+    'yanbu': ['ينبع'],
+    'hofuf': ['الهفوف', 'هفوف', 'الأحساء', 'الاحساء'],
+    'najran': ['نجران'],
+    'jazan': ['جازان', 'جيزان'],
+    'qatif': ['القطيف', 'قطيف'],
+    'buraidah': ['بريدة', 'بريده'],
+    'hail': ['حائل'],
+    'arar': ['عرعر'],
+    'sakaka': ['سكاكا'],
+}
+
 # Special characters
 SPECIALS = ['', '!', '@', '#', '$', '%', '&', '*', '_', '-', '.', '+', '=']
 
@@ -108,6 +133,8 @@ def get_all_names(include_names=True, include_cities=False, include_abu=True):
         for variants in JORDAN_CITIES.values():
             names.extend(variants)
         for variants in SYRIA_CITIES.values():
+            names.extend(variants)
+        for variants in SAUDI_CITIES.values():
             names.extend(variants)
     return names
 

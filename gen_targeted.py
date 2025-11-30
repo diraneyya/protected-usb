@@ -60,6 +60,31 @@ SYRIA_CITIES = {
     'suwayda': ['suwayda', 'Suwayda', 'SUWAYDA', 'sweida', 'Sweida'],
 }
 
+# Saudi Arabia cities (English spellings)
+SAUDI_CITIES = {
+    'riyadh': ['riyadh', 'Riyadh', 'RIYADH', 'riyad', 'Riyad'],
+    'jeddah': ['jeddah', 'Jeddah', 'JEDDAH', 'jidda', 'Jidda', 'jedda', 'Jedda'],
+    'mecca': ['mecca', 'Mecca', 'MECCA', 'makkah', 'Makkah'],
+    'medina': ['medina', 'Medina', 'MEDINA', 'madinah', 'Madinah'],
+    'dammam': ['dammam', 'Dammam', 'DAMMAM'],
+    'khobar': ['khobar', 'Khobar', 'KHOBAR', 'alkhobar', 'AlKhobar'],
+    'dhahran': ['dhahran', 'Dhahran', 'DHAHRAN'],
+    'tabuk': ['tabuk', 'Tabuk', 'TABUK', 'tabouk', 'Tabouk'],
+    'taif': ['taif', 'Taif', 'TAIF', 'tayef', 'Tayef'],
+    'abha': ['abha', 'Abha', 'ABHA'],
+    'khamis': ['khamis', 'Khamis', 'KHAMIS', 'khamismushait', 'KhamisMushait'],
+    'jubail': ['jubail', 'Jubail', 'JUBAIL', 'jubayl', 'Jubayl'],
+    'yanbu': ['yanbu', 'Yanbu', 'YANBU', 'yenbu', 'Yenbu'],
+    'hofuf': ['hofuf', 'Hofuf', 'HOFUF', 'alhasa', 'AlHasa', 'ahsa', 'Ahsa'],
+    'najran': ['najran', 'Najran', 'NAJRAN'],
+    'jazan': ['jazan', 'Jazan', 'JAZAN', 'jizan', 'Jizan', 'gizan', 'Gizan'],
+    'qatif': ['qatif', 'Qatif', 'QATIF', 'katif', 'Katif'],
+    'buraidah': ['buraidah', 'Buraidah', 'BURAIDAH', 'buraydah', 'Buraydah'],
+    'hail': ['hail', 'Hail', 'HAIL', 'hayel', 'Hayel'],
+    'arar': ['arar', 'Arar', 'ARAR'],
+    'sakaka': ['sakaka', 'Sakaka', 'SAKAKA'],
+}
+
 # Special characters
 SPECIALS = ['', '!', '@', '#', '$', '%', '&', '*', '_', '-', '.', '+', '=']
 
@@ -110,6 +135,8 @@ def get_all_names(include_names=True, include_cities=False, include_abu=True):
         for variants in JORDAN_CITIES.values():
             names.extend(variants)
         for variants in SYRIA_CITIES.values():
+            names.extend(variants)
+        for variants in SAUDI_CITIES.values():
             names.extend(variants)
     return names
 
