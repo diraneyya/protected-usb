@@ -2,13 +2,22 @@
 """
 Targeted Arabic password generator for family names.
 Names: يحيى، نور، سنا، عثمان، ماجد
+
+Usage:
+  python3 gen_targeted_arabic.py [--cities] [--no-names]
+
+Options:
+  --cities     Include Jordan/Syria city names
+  --no-names   Exclude family names (use only cities)
+  --only-cities  Same as --cities --no-names
 """
 
+import argparse
 import itertools
 import sys
 
 # Name variations in Arabic
-NAMES = {
+FAMILY_NAMES = {
     'yahya': ['يحيى', 'يحيا', 'يحي'],
     'nour': ['نور', 'نورا', 'نوره', 'نورة'],
     'sana': ['سنا', 'سناء', 'سنى'],
@@ -16,10 +25,39 @@ NAMES = {
     'majed': ['ماجد', 'مجد', 'مجيد'],
 }
 
-# Flatten all name variations
-ALL_NAMES = []
-for variants in NAMES.values():
-    ALL_NAMES.extend(variants)
+# Jordan cities (Arabic)
+JORDAN_CITIES = {
+    'amman': ['عمان', 'عمّان'],
+    'irbid': ['اربد', 'إربد'],
+    'zarqa': ['الزرقاء', 'زرقاء'],
+    'aqaba': ['العقبة', 'عقبة'],
+    'salt': ['السلط', 'سلط'],
+    'madaba': ['مادبا', 'مأدبا'],
+    'karak': ['الكرك', 'كرك'],
+    'jerash': ['جرش'],
+    'ajloun': ['عجلون'],
+    'mafraq': ['المفرق', 'مفرق'],
+    'tafilah': ['الطفيلة', 'طفيلة'],
+    'maan': ['معان', 'معن'],
+    'petra': ['البتراء', 'بترا'],
+}
+
+# Syria cities (Arabic)
+SYRIA_CITIES = {
+    'damascus': ['دمشق', 'الشام', 'شام'],
+    'aleppo': ['حلب'],
+    'homs': ['حمص'],
+    'hama': ['حماة', 'حماه'],
+    'latakia': ['اللاذقية', 'لاذقية'],
+    'deir_ezzor': ['دير الزور', 'ديرالزور'],
+    'raqqa': ['الرقة', 'رقة'],
+    'idlib': ['إدلب', 'ادلب'],
+    'daraa': ['درعا', 'درعة'],
+    'tartus': ['طرطوس'],
+    'qamishli': ['القامشلي', 'قامشلي'],
+    'palmyra': ['تدمر'],
+    'suwayda': ['السويداء', 'سويداء'],
+}
 
 # Special characters
 SPECIALS = ['', '!', '@', '#', '$', '%', '&', '*', '_', '-', '.', '+', '=']
@@ -29,8 +67,6 @@ YEARS = [str(y) for y in range(1900, 2026)]
 SHORT_YEARS = [str(y)[2:] for y in range(1950, 2026)]  # 50-25
 
 # Hijri Years (Islamic calendar)
-# Current year ~1446 AH (2024 CE)
-# Range: 1300-1446 covers roughly 1882-2024 CE
 HIJRI_YEARS = [str(y) for y in range(1300, 1447)]
 SHORT_HIJRI = [str(y)[2:] for y in range(1400, 1447)]  # 00-46 (1400-1446)
 
@@ -47,27 +83,40 @@ def char_len(s):
     """Count characters (not bytes) for length validation"""
     return len(s)
 
-def generate_name_year():
+def get_all_names(include_names=True, include_cities=False):
+    """Build the list of names based on options"""
+    names = []
+    if include_names:
+        for variants in FAMILY_NAMES.values():
+            names.extend(variants)
+    if include_cities:
+        for variants in JORDAN_CITIES.values():
+            names.extend(variants)
+        for variants in SYRIA_CITIES.values():
+            names.extend(variants)
+    return names
+
+def generate_name_year(names):
     """Pattern: Name + special + year (Gregorian + Hijri)"""
-    for name in ALL_NAMES:
+    for name in names:
         for spec in SPECIALS:
             for year in ALL_YEARS:
                 pwd = f"{name}{spec}{year}"
                 if 8 <= char_len(pwd) <= 20:
                     yield pwd
 
-def generate_year_name():
+def generate_year_name(names):
     """Pattern: Year + special + name (Gregorian + Hijri)"""
     for year in ALL_YEARS:
         for spec in SPECIALS:
-            for name in ALL_NAMES:
+            for name in names:
                 pwd = f"{year}{spec}{name}"
                 if 8 <= char_len(pwd) <= 20:
                     yield pwd
 
-def generate_name_space_year():
+def generate_name_space_year(names):
     """Pattern: Name + space + year (common Arabic pattern, Gregorian + Hijri)"""
-    for name in ALL_NAMES:
+    for name in names:
         for year in ALL_YEARS:
             pwd = f"{name} {year}"
             if 8 <= char_len(pwd) <= 20:
@@ -78,28 +127,28 @@ def generate_name_space_year():
                 if 8 <= char_len(pwd) <= 20:
                     yield pwd
 
-def generate_name_special_name():
+def generate_name_special_name(names):
     """Pattern: Name + separator + name"""
-    for name1 in ALL_NAMES:
+    for name1 in names:
         for sep in SEPARATORS:
-            for name2 in ALL_NAMES:
+            for name2 in names:
                 pwd = f"{name1}{sep}{name2}"
                 if 8 <= char_len(pwd) <= 20:
                     yield pwd
 
-def generate_name_name_year():
+def generate_name_name_year(names):
     """Pattern: Name + separator + name + year (Gregorian + Hijri)"""
-    for name1 in ALL_NAMES:
+    for name1 in names:
         for sep in SEPARATORS:
-            for name2 in ALL_NAMES:
+            for name2 in names:
                 for year in SHORT_YEARS + SHORT_HIJRI + ['2020', '2021', '2022', '2023', '2024', '1440', '1441', '1442', '1443', '1444', '1445', '1446']:
                     pwd = f"{name1}{sep}{name2}{year}"
                     if 8 <= char_len(pwd) <= 20:
                         yield pwd
 
-def generate_name_digits():
+def generate_name_digits(names):
     """Pattern: Name + 1-4 digits"""
-    for name in ALL_NAMES:
+    for name in names:
         # 1 digit
         for d in range(10):
             pwd = f"{name}{d}"
@@ -121,9 +170,9 @@ def generate_name_digits():
             if 8 <= char_len(pwd) <= 20:
                 yield pwd
 
-def generate_name_space_digits():
+def generate_name_space_digits(names):
     """Pattern: Name + space + digits (common Arabic pattern)"""
-    for name in ALL_NAMES:
+    for name in names:
         # 1-4 digits with space
         for d in range(10):
             pwd = f"{name} {d}"
@@ -142,29 +191,29 @@ def generate_name_space_digits():
             if 8 <= char_len(pwd) <= 20:
                 yield pwd
 
-def generate_name_special_digits():
+def generate_name_special_digits(names):
     """Pattern: Name + special + digits"""
-    for name in ALL_NAMES:
+    for name in names:
         for spec in SPECIALS[1:]:  # Skip empty
             for d in range(10000):
                 pwd = f"{name}{spec}{d}"
                 if 8 <= char_len(pwd) <= 20:
                     yield pwd
 
-def generate_common_arabic_patterns():
+def generate_common_arabic_patterns(names):
     """Common Arabic password patterns"""
     # Common prefixes/suffixes in Arabic
     prefixes = ['يا', 'ال', 'أنا', 'حب', 'نور']
     suffixes = ['ي', 'تي', 'نا', 'كم']
 
-    for name in ALL_NAMES:
+    for name in names:
         # With prefixes
         for prefix in prefixes:
             pwd = f"{prefix}{name}"
             if 8 <= char_len(pwd) <= 20:
                 yield pwd
             # prefix + name + year
-            for year in SHORT_YEARS:
+            for year in SHORT_YEARS + SHORT_HIJRI:
                 pwd = f"{prefix}{name}{year}"
                 if 8 <= char_len(pwd) <= 20:
                     yield pwd
@@ -175,16 +224,16 @@ def generate_common_arabic_patterns():
             if 8 <= char_len(pwd) <= 20:
                 yield pwd
             # name + suffix + year
-            for year in SHORT_YEARS:
+            for year in SHORT_YEARS + SHORT_HIJRI:
                 pwd = f"{name}{suffix}{year}"
                 if 8 <= char_len(pwd) <= 20:
                     yield pwd
 
-def generate_religious_patterns():
+def generate_religious_patterns(names):
     """Religious/common Arabic phrases with names"""
     religious = ['الله', 'محمد', 'رب', 'حمد']
 
-    for name in ALL_NAMES:
+    for name in names:
         for rel in religious:
             # name + religious
             pwd = f"{name}{rel}"
@@ -201,16 +250,16 @@ def generate_religious_patterns():
             if 8 <= char_len(pwd) <= 20:
                 yield pwd
             # with year
-            for year in SHORT_YEARS:
+            for year in SHORT_YEARS + SHORT_HIJRI:
                 pwd = f"{name}{rel}{year}"
                 if 8 <= char_len(pwd) <= 20:
                     yield pwd
 
-def generate_love_patterns():
+def generate_love_patterns(names):
     """Love/family related patterns"""
     love_words = ['حب', 'حبي', 'حبيب', 'حبيبي', 'حبيبتي', 'عمر', 'عمري', 'روح', 'روحي', 'قلب', 'قلبي']
 
-    for name in ALL_NAMES:
+    for name in names:
         for love in love_words:
             pwd = f"{love}{name}"
             if 8 <= char_len(pwd) <= 20:
@@ -231,6 +280,27 @@ def generate_love_patterns():
                     yield pwd
 
 def main():
+    parser = argparse.ArgumentParser(description='Generate targeted Arabic passwords')
+    parser.add_argument('--cities', action='store_true', help='Include Jordan/Syria city names')
+    parser.add_argument('--no-names', action='store_true', help='Exclude family names')
+    parser.add_argument('--only-cities', action='store_true', help='Use only city names (same as --cities --no-names)')
+    args = parser.parse_args()
+
+    # Handle --only-cities shortcut
+    if args.only_cities:
+        args.cities = True
+        args.no_names = True
+
+    include_names = not args.no_names
+    include_cities = args.cities
+
+    if not include_names and not include_cities:
+        print("Error: Must include at least names or cities", file=sys.stderr)
+        sys.exit(1)
+
+    names = get_all_names(include_names=include_names, include_cities=include_cities)
+    print(f"# Using {len(names)} name/city variations", file=sys.stderr)
+
     seen = set()
     count = 0
 
@@ -249,7 +319,7 @@ def main():
     ]
 
     for gen_name, gen_func in generators:
-        for pwd in gen_func():
+        for pwd in gen_func(names):
             if pwd not in seen:
                 seen.add(pwd)
                 print(pwd)

@@ -2,13 +2,22 @@
 """
 Targeted password generator for family names with flexible combinations.
 Names: Yahya, Nour, Sana, Othman, Majed (English spellings)
+
+Usage:
+  python3 gen_targeted.py [--cities] [--no-names]
+
+Options:
+  --cities     Include Jordan/Syria city names
+  --no-names   Exclude family names (use only cities)
+  --only-cities  Same as --cities --no-names
 """
 
+import argparse
 import itertools
 import sys
 
 # Name variations (common English spellings)
-NAMES = {
+FAMILY_NAMES = {
     'yahya': ['yahya', 'yahia', 'yehya', 'yehia', 'yhya', 'yahiya', 'Yahya', 'Yahia', 'Yehya', 'Yehia', 'YAHYA', 'YAHIA'],
     'nour': ['nour', 'noor', 'nur', 'noura', 'noora', 'nura', 'Nour', 'Noor', 'Nur', 'Noura', 'NOUR', 'NOOR'],
     'sana': ['sana', 'sanaa', 'sanna', 'Sana', 'Sanaa', 'SANA', 'SANAA'],
@@ -16,10 +25,40 @@ NAMES = {
     'majed': ['majed', 'majid', 'maged', 'magid', 'majd', 'Majed', 'Majid', 'Maged', 'MAJED', 'MAJID'],
 }
 
-# Flatten all name variations
-ALL_NAMES = []
-for variants in NAMES.values():
-    ALL_NAMES.extend(variants)
+# Jordan cities (English spellings)
+JORDAN_CITIES = {
+    'amman': ['amman', 'Amman', 'AMMAN', 'aman', 'Aman'],
+    'irbid': ['irbid', 'Irbid', 'IRBID', 'arbid', 'Arbid'],
+    'zarqa': ['zarqa', 'Zarqa', 'ZARQA', 'zarka', 'Zarka'],
+    'aqaba': ['aqaba', 'Aqaba', 'AQABA', 'akaba', 'Akaba'],
+    'salt': ['salt', 'Salt', 'SALT', 'alsalt', 'Alsalt'],
+    'madaba': ['madaba', 'Madaba', 'MADABA'],
+    'karak': ['karak', 'Karak', 'KARAK', 'kerak', 'Kerak'],
+    'jerash': ['jerash', 'Jerash', 'JERASH', 'jarash', 'Jarash'],
+    'ajloun': ['ajloun', 'Ajloun', 'AJLOUN', 'ajlun', 'Ajlun'],
+    'mafraq': ['mafraq', 'Mafraq', 'MAFRAQ'],
+    'tafilah': ['tafilah', 'Tafilah', 'TAFILAH', 'tafila', 'Tafila'],
+    'maan': ['maan', 'Maan', 'MAAN', "ma'an", "Ma'an"],
+    'petra': ['petra', 'Petra', 'PETRA'],
+    'wadi_rum': ['wadirum', 'Wadirum', 'WadiRum', 'wadi_rum'],
+}
+
+# Syria cities (English spellings)
+SYRIA_CITIES = {
+    'damascus': ['damascus', 'Damascus', 'DAMASCUS', 'dimashq', 'Dimashq'],
+    'aleppo': ['aleppo', 'Aleppo', 'ALEPPO', 'halab', 'Halab'],
+    'homs': ['homs', 'Homs', 'HOMS', 'hims', 'Hims'],
+    'hama': ['hama', 'Hama', 'HAMA', 'hamah', 'Hamah'],
+    'latakia': ['latakia', 'Latakia', 'LATAKIA', 'lattakia', 'Lattakia'],
+    'deir_ezzor': ['deirezzor', 'DeirEzzor', 'deir_ezzor', 'deirezor', 'DeirEzor'],
+    'raqqa': ['raqqa', 'Raqqa', 'RAQQA', 'rakka', 'Rakka'],
+    'idlib': ['idlib', 'Idlib', 'IDLIB'],
+    'daraa': ['daraa', 'Daraa', 'DARAA', 'deraa', 'Deraa'],
+    'tartus': ['tartus', 'Tartus', 'TARTUS', 'tartous', 'Tartous'],
+    'qamishli': ['qamishli', 'Qamishli', 'QAMISHLI', 'kamishli', 'Kamishli'],
+    'palmyra': ['palmyra', 'Palmyra', 'PALMYRA', 'tadmor', 'Tadmor'],
+    'suwayda': ['suwayda', 'Suwayda', 'SUWAYDA', 'sweida', 'Sweida'],
+}
 
 # Special characters
 SPECIALS = ['', '!', '@', '#', '$', '%', '&', '*', '_', '-', '.', '+', '=']
@@ -29,8 +68,6 @@ YEARS = [str(y) for y in range(1900, 2026)]
 SHORT_YEARS = [str(y)[2:] for y in range(1950, 2026)]  # 50-25
 
 # Hijri Years (Islamic calendar)
-# Current year ~1446 AH (2024 CE)
-# Range: 1300-1446 covers roughly 1882-2024 CE
 HIJRI_YEARS = [str(y) for y in range(1300, 1447)]
 SHORT_HIJRI = [str(y)[2:] for y in range(1400, 1447)]  # 00-46 (1400-1446)
 
@@ -40,46 +77,62 @@ ALL_YEARS = YEARS + SHORT_YEARS + HIJRI_YEARS + SHORT_HIJRI
 # Common separators
 SEPARATORS = ['', ' ', '_', '-', '.', '@', '#']
 
-def generate_name_year():
+# Will be populated based on command line args
+ALL_NAMES = []
+
+def get_all_names(include_names=True, include_cities=False):
+    """Build the list of names based on options"""
+    names = []
+    if include_names:
+        for variants in FAMILY_NAMES.values():
+            names.extend(variants)
+    if include_cities:
+        for variants in JORDAN_CITIES.values():
+            names.extend(variants)
+        for variants in SYRIA_CITIES.values():
+            names.extend(variants)
+    return names
+
+def generate_name_year(names):
     """Pattern: Name + special + year (Gregorian + Hijri)"""
-    for name in ALL_NAMES:
+    for name in names:
         for spec in SPECIALS:
             for year in ALL_YEARS:
                 pwd = f"{name}{spec}{year}"
                 if 8 <= len(pwd) <= 20:
                     yield pwd
 
-def generate_year_name():
+def generate_year_name(names):
     """Pattern: Year + special + name (Gregorian + Hijri)"""
     for year in ALL_YEARS:
         for spec in SPECIALS:
-            for name in ALL_NAMES:
+            for name in names:
                 pwd = f"{year}{spec}{name}"
                 if 8 <= len(pwd) <= 20:
                     yield pwd
 
-def generate_name_special_name():
+def generate_name_special_name(names):
     """Pattern: Name + separator + name"""
-    for name1 in ALL_NAMES:
+    for name1 in names:
         for sep in SEPARATORS:
-            for name2 in ALL_NAMES:
+            for name2 in names:
                 pwd = f"{name1}{sep}{name2}"
                 if 8 <= len(pwd) <= 20:
                     yield pwd
 
-def generate_name_name_year():
+def generate_name_name_year(names):
     """Pattern: Name + separator + name + year (Gregorian + Hijri)"""
-    for name1 in ALL_NAMES:
+    for name1 in names:
         for sep in SEPARATORS:
-            for name2 in ALL_NAMES:
+            for name2 in names:
                 for year in SHORT_YEARS + SHORT_HIJRI:
                     pwd = f"{name1}{sep}{name2}{year}"
                     if 8 <= len(pwd) <= 20:
                         yield pwd
 
-def generate_name_digits():
+def generate_name_digits(names):
     """Pattern: Name + 1-4 digits"""
-    for name in ALL_NAMES:
+    for name in names:
         # 1 digit
         for d in range(10):
             pwd = f"{name}{d}"
@@ -96,20 +149,20 @@ def generate_name_digits():
             if 8 <= len(pwd) <= 20:
                 yield pwd
 
-def generate_name_special_digits():
+def generate_name_special_digits(names):
     """Pattern: Name + special + digits"""
-    for name in ALL_NAMES:
+    for name in names:
         for spec in SPECIALS[1:]:  # Skip empty
             for d in range(10000):
                 pwd = f"{name}{spec}{d}"
                 if 8 <= len(pwd) <= 20:
                     yield pwd
 
-def generate_leet_speak():
+def generate_leet_speak(names):
     """Leet speak variants of names (with Gregorian + Hijri years)"""
     leet_map = {'a': '@', 'e': '3', 'i': '1', 'o': '0', 's': '$', 't': '7'}
 
-    for name in ALL_NAMES:
+    for name in names:
         name_lower = name.lower()
         # Generate all leet combinations
         positions = [(i, c) for i, c in enumerate(name_lower) if c in leet_map]
@@ -132,7 +185,7 @@ def generate_leet_speak():
                         if 8 <= len(pwd) <= 20:
                             yield pwd
 
-def generate_common_patterns():
+def generate_common_patterns(names):
     """Common password patterns with names (Gregorian + Hijri years)"""
     patterns = [
         "{name}123", "{name}1234", "{name}12345",
@@ -148,7 +201,7 @@ def generate_common_patterns():
         "{name}1440", "{name}1441", "{name}1442", "{name}1443", "{name}1444", "{name}1445", "{name}1446",
     ]
 
-    for name in ALL_NAMES:
+    for name in names:
         for pattern in patterns:
             pwd = pattern.format(name=name)
             if 8 <= len(pwd) <= 20:
@@ -159,6 +212,27 @@ def generate_common_patterns():
                 yield pwd_cap
 
 def main():
+    parser = argparse.ArgumentParser(description='Generate targeted passwords')
+    parser.add_argument('--cities', action='store_true', help='Include Jordan/Syria city names')
+    parser.add_argument('--no-names', action='store_true', help='Exclude family names')
+    parser.add_argument('--only-cities', action='store_true', help='Use only city names (same as --cities --no-names)')
+    args = parser.parse_args()
+
+    # Handle --only-cities shortcut
+    if args.only_cities:
+        args.cities = True
+        args.no_names = True
+
+    include_names = not args.no_names
+    include_cities = args.cities
+
+    if not include_names and not include_cities:
+        print("Error: Must include at least names or cities", file=sys.stderr)
+        sys.exit(1)
+
+    names = get_all_names(include_names=include_names, include_cities=include_cities)
+    print(f"# Using {len(names)} name/city variations", file=sys.stderr)
+
     seen = set()
     count = 0
 
@@ -174,7 +248,7 @@ def main():
     ]
 
     for gen_name, gen_func in generators:
-        for pwd in gen_func():
+        for pwd in gen_func(names):
             if pwd not in seen:
                 seen.add(pwd)
                 print(pwd)
