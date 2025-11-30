@@ -1,0 +1,11 @@
+# User Password hash (fast attack - mode 0)
+$bitlocker$0$16$b3b78555e45367d2d735588ffe89ce85$1048576$12$90e2969ca76cd50103000000$60$692c659b722d52df34acaf73c8f52f15e34a1d6267f8840e3fc93f1c488ab800ed1e0128f701eced9dd1116ace6c42144ed70825b6cf7f01202424f3
+
+# User Password hash (with MAC verification - mode 1, slower but no false positives)
+$bitlocker$1$16$b3b78555e45367d2d735588ffe89ce85$1048576$12$90e2969ca76cd50103000000$60$692c659b722d52df34acaf73c8f52f15e34a1d6267f8840e3fc93f1c488ab800ed1e0128f701eced9dd1116ace6c42144ed70825b6cf7f01202424f3
+
+# Recovery Password hash (fast attack - mode 2) - NOT PRACTICAL TO CRACK
+$bitlocker$2$16$0c62c24a1a1e784865cdb54a40274eff$1048576$12$90e2969ca76cd50106000000$60$75d0e7ecbc11ed83a269b95a1bf345891638ecbcdfd010fa1ff08bb6f12fa52cc46cc58f9b1cd7bf6739b23c0fd881fec8667ff93127e4efdc568e57
+
+# Recovery Password hash (with MAC - mode 3) - NOT PRACTICAL TO CRACK
+$bitlocker$3$16$0c62c24a1a1e784865cdb54a40274eff$1048576$12$90e2969ca76cd50106000000$60$75d0e7ecbc11ed83a269b95a1bf345891638ecbcdfd010fa1ff08bb6f12fa52cc46cc58f9b1cd7bf6739b23c0fd881fec8667ff93127e4efdc568e57
