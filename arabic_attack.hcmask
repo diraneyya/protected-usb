@@ -52,6 +52,27 @@
 # Position-only:  ~5.6 trillion (~42% reduction)
 # With filter:    ~2.0 trillion (~80% reduction)
 #
+# TWO-WORD ATTACK (Recommended for space-separated passwords):
+# ------------------------------------------------------------
+# Use gen_arabic_pairs.py for massive reduction by assuming a space
+# between two valid Arabic words:
+#
+#   # 3+3 letter words (no digits): ~90 million candidates
+#   python3 gen_arabic_pairs.py 3 3 | hashcat -m 22100 hash.txt -a 0
+#
+#   # 3+4 letter words (no digits): ~3 billion candidates
+#   python3 gen_arabic_pairs.py 3 4 | hashcat -m 22100 hash.txt -a 0
+#
+#   # 4+4 letter words + 4 digits: ~980 billion candidates
+#   python3 gen_arabic_pairs.py 4 4 --digits 4 | hashcat -m 22100 hash.txt -a 0
+#
+#   # Estimate only (no generation):
+#   python3 gen_arabic_pairs.py 4 4 --digits 0-4 --estimate
+#
+# Comparison (8 total chars):
+#   - Random 8 Arabic chars:     ~9.68 trillion
+#   - Two words (3+space+4):     ~3 billion (~3000x reduction!)
+#
 # ============================================
 
 # --------------------------------------------
